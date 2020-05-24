@@ -1,2 +1,2 @@
 runtime: java11
-service: da-backend
+service: backend
