@@ -16,9 +16,15 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "https://repo.spring.io/milestone"
+	}
 }
 
 dependencies {
+	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+	compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql', version: '1.2.2.RELEASE'
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
