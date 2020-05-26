@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 public class DeliveryAssistantApplication {
@@ -20,10 +21,10 @@ public class DeliveryAssistantApplication {
 	@Bean
 	public CommandLineRunner houses(HouseRepository houseRepository) {
 		return args -> {
-//			Stream.of(new House("Iasi"),
-//					new House("Cluj"),
-//					new House("Bucuresti"))
-//					.forEach(houseRepository::save);
+			Stream.of(new House("Iasi"),
+					new House("Cluj"),
+					new House("Bucuresti"))
+					.forEach(houseRepository::save);
 
 			houseRepository.findAll()
 					.forEach(house -> System.out.println("House " + house.getId() + ": " + house.getAddress()));
