@@ -1,6 +1,9 @@
-runtime: java11
+runtime: java
 env: flex
 service: backend
+
+runtime_config:
+  jdk: openjdk8
 
 manual_scaling:
   instances: 1

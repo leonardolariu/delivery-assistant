@@ -5,6 +5,10 @@ plugins {
 	id 'war'
 }
 
+war {
+	enabled = true
+}
+
 group = 'com.leonardolariu'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -24,8 +28,6 @@ repositories {
 
 dependencies {
 	compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql', version: '1.2.2.RELEASE'
-	compile group: 'com.google.cloud.tools', name: 'appengine-gradle-plugin', version: '2.2.0'
-
 	compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.16.Final'
 	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
