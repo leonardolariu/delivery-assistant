@@ -1,10 +1,6 @@
-runtime: java11
+runtime: java
 env: flex
 service: backend
-
-handlers:
-- url: /.*
-  script: this field is required, but ignored
 
 manual_scaling:
   instances: 1
