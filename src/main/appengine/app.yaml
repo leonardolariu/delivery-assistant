@@ -1,7 +1,13 @@
-runtime: java11
+runtime: java
 env: flex
 service: backend
 
 handlers:
 - url: /.*
   script: this field is required, but ignored
+
+runtime_config:  # Optional
+  jdk: openjdk11
+
+manual_scaling:
+  instances: 1
