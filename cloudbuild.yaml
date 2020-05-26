@@ -2,8 +2,5 @@ steps:
   - name: gradle:5.6-jdk11
     entrypoint: gradle
     args: ["build", "--info"]
-  - name: gradle:5.6-jdk11
-    entrypoint: gradle
-    args: ["jar"]
   - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy", 'src/main/appengine/app.yaml']
+    args: ["app", "deploy"]

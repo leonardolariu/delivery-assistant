@@ -1,0 +1,5 @@
+runtime: java11
+service: backend
+
+manual_scaling:
+  instances: 1
