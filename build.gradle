@@ -22,9 +22,11 @@ repositories {
 }
 
 dependencies {
-	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 	compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql', version: '1.2.2.RELEASE'
+	compile group: 'com.google.cloud.tools', name: 'appengine-gradle-plugin', version: '2.2.0'
+
 	compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.16.Final'
+	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
