@@ -1,3 +1,5 @@
-runtime: java11
+runtime: java
 env: flex
+runtime_config:
+  jdk: openjdk11
 service: backend
