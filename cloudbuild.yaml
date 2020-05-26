@@ -3,4 +3,4 @@ steps:
     entrypoint: gradle
     args: ["build", "--info"]
   - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
+    args: ["app", "deploy", 'src/main/appengine/app.yaml']
