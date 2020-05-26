@@ -5,6 +5,6 @@ handlers:
 - url: /.*
   script: this field is required, but ignored
 
-instance_class: M4
+instance_class: B4
 manual_scaling:
   instances: 2
