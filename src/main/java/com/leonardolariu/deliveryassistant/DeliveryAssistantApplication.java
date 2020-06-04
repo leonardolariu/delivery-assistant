@@ -21,13 +21,13 @@ public class DeliveryAssistantApplication {
 	}
 
 	@Bean
-	public CommandLineRunner checkRoles(RoleRepository roleRepository) {
+	public CommandLineRunner checkRoles(RoleRepository RoleRepository) {
 		return args -> {
-			List<Role> roles = roleRepository.findAll();
+			List<Role> roles = RoleRepository.findAll();
 			if (roles.isEmpty()) {
 				Stream.of(new Role(ERole.ROLE_USER),
 					new Role(ERole.ROLE_ADMIN))
-					.forEach(roleRepository::save);
+					.forEach(RoleRepository::save);
 			}
 		};
 	}

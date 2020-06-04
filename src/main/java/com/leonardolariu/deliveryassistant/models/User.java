@@ -34,8 +34,21 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy="user", fetch = FetchType.EAGER)
+    private Set<Driver> drivers = new HashSet<>();
+
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+
+
+    public void addDriver(Driver driver) {
+        drivers.add(driver);
+    }
+
+    public void removeDriver(Driver driver) {
+        drivers.remove(driver);
     }
 }
