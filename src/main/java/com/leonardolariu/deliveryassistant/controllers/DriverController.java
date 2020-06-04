@@ -24,6 +24,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/drivers")
 public class DriverController {
     private DriverService driverService;
