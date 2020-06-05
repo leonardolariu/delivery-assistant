@@ -6,8 +6,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Entity
 @Table(	name = "users",
@@ -37,6 +37,9 @@ public class User {
     @OneToMany(mappedBy="user", fetch = FetchType.EAGER)
     private Set<Driver> drivers = new HashSet<>();
 
+    @OneToMany(mappedBy="user", fetch = FetchType.EAGER)
+    private Set<Delivery> deliveries = new HashSet<>();
+
     public User(String username, String password) {
         this.username = username;
         this.password = password;
@@ -50,5 +53,23 @@ public class User {
 
     public void removeDriver(Driver driver) {
         drivers.remove(driver);
+    }
+
+    public void addDelivery(Delivery delivery) {
+        deliveries.add(delivery);
+    }
+
+    public Optional<Delivery> getDailyDelivery() {
+        return deliveries.stream()
+                .filter(this::checkDate)
+                .findFirst();
+    }
+
+    private boolean checkDate(Delivery delivery) {
+        Calendar today = new GregorianCalendar();
+        String todayString = (new SimpleDateFormat("dd/MM/yyyy")).format(today.getTime());
+        String deliveryDateString = delivery.getDeliveryDateString();
+
+        return todayString.equals(deliveryDateString);
     }
 }
