@@ -49,4 +49,8 @@ public class Delivery {
     public String getDeliveryDateString() {
         return (new SimpleDateFormat("dd/MM/yyyy")).format(date.getTime());
     }
+
+    public String getDeliveryShortDateString() {
+        return (new SimpleDateFormat("dd/MM")).format(date.getTime());
+    }
 }

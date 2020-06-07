@@ -43,8 +43,8 @@ public class CSVService {
     public int getPackagesCount(MultipartFile file) throws ApiException {
         // file is valid! mapToPackageList was called in DeliveryController beforehand
 
-        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            return (int) (((BufferedReader) reader).lines().count() - 1);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            return (int) (reader.lines().count() - 1);
         } catch (Exception ex) {
             throw new ApiException(400, "File has invalid format.");
         }

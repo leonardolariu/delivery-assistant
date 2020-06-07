@@ -16,5 +16,5 @@ public class DeliveryDTO {
     private int actualDriversCount;
     private int packagesCount;
     private double minimumDistanceToCover;
-    private Set<RouteDTO> routes;
+    private Set<Route> routes;
 }

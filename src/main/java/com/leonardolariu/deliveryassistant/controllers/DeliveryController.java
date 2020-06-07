@@ -2,8 +2,9 @@ package com.leonardolariu.deliveryassistant.controllers;
 
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
 import com.leonardolariu.deliveryassistant.payload.errors.BadRequestError;
-import com.leonardolariu.deliveryassistant.payload.errors.NotFoundError;
+import com.leonardolariu.deliveryassistant.payload.errors.ForbiddenError;
 import com.leonardolariu.deliveryassistant.payload.responses.DeliveryDTO;
+import com.leonardolariu.deliveryassistant.payload.responses.EstimationResponse;
 import com.leonardolariu.deliveryassistant.payload.responses.MessageResponse;
 import com.leonardolariu.deliveryassistant.services.DeliveryService;
 import com.leonardolariu.deliveryassistant.services.utils.CSVService;
@@ -42,21 +43,29 @@ public class DeliveryController {
         log.info("GET request to get daily delivery data");
 
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        DeliveryDTO deliveryDTO = deliveryService.getDailyDeliveryData(userDetails);
-        return ResponseEntity.ok(deliveryDTO);
+        try {
+            DeliveryDTO deliveryDTO = deliveryService.getDailyDeliveryData(userDetails);
+            return ResponseEntity.ok(deliveryDTO);
+        } catch (ApiException e) {
+            switch (e.getStatus()) {
+                case 403:
+                    return ResponseEntity
+                            .status(HttpStatus.FORBIDDEN)
+                            .body(new ForbiddenError(e.getMessage()));
+
+                default:
+                    return ResponseEntity
+                            .badRequest()
+                            .body(new BadRequestError(e.getMessage()));
+            }
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new BadRequestError("File could not be read."));
+        }
     }
 
-    @PostMapping("/daily/reset")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> resetDailyDelivery() {
-        log.info("POST request to reset daily delivery data");
-
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        deliveryService.resetDailyDelivery(userDetails);
-        return ResponseEntity.ok(new MessageResponse("Daily Delivery reset."));
-    }
-
-    @PostMapping("/upload-csv")
+    @PostMapping("daily/upload-csv")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> uploadCSV(@RequestParam("file") MultipartFile file) {
         log.info("POST request to upload csv");
@@ -78,7 +87,7 @@ public class DeliveryController {
                 case 403:
                     return ResponseEntity
                             .status(HttpStatus.FORBIDDEN)
-                            .body(new NotFoundError(e.getMessage()));
+                            .body(new ForbiddenError(e.getMessage()));
 
                 default:
                     return ResponseEntity
@@ -90,5 +99,71 @@ public class DeliveryController {
                     .badRequest()
                     .body(new BadRequestError("File could not be read."));
         }
+    }
+
+    @GetMapping("/daily/estimate-drivers-count")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getDailyDriversCountEstimation() {
+        log.info("GET request to get daily driversCount estimation");
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            int estimatedDriversCount = deliveryService.estimateDriversCount(userDetails);
+            return ResponseEntity.ok(new EstimationResponse(estimatedDriversCount));
+        } catch (ApiException e) {
+            switch (e.getStatus()) {
+                case 403:
+                    return ResponseEntity
+                            .status(HttpStatus.FORBIDDEN)
+                            .body(new ForbiddenError(e.getMessage()));
+
+                default:
+                    return ResponseEntity
+                            .badRequest()
+                            .body(new BadRequestError(e.getMessage()));
+            }
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new BadRequestError("File could not be read."));
+        }
+    }
+
+    @PostMapping("/daily/process-routes/{driversCount}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getDailyDriversCountEstimation(@PathVariable int driversCount) {
+        log.info("POST request to process routes");
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            deliveryService.processRoutes(userDetails, driversCount);
+            return ResponseEntity.ok(new MessageResponse("Routes processed successfully."));
+        } catch (ApiException e) {
+            switch (e.getStatus()) {
+                case 403:
+                    return ResponseEntity
+                            .status(HttpStatus.FORBIDDEN)
+                            .body(new ForbiddenError(e.getMessage()));
+
+                default:
+                    return ResponseEntity
+                            .badRequest()
+                            .body(new BadRequestError(e.getMessage()));
+            }
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new BadRequestError("File could not be read."));
+        }
+    }
+
+    @PostMapping("/daily/reset")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> resetDailyDelivery() {
+        log.info("POST request to reset daily delivery data");
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        deliveryService.resetDailyDelivery(userDetails);
+        return ResponseEntity.ok(new MessageResponse("Daily Delivery reset."));
     }
 }
