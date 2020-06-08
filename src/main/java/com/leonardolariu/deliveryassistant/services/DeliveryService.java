@@ -14,14 +14,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -81,7 +79,7 @@ public class DeliveryService {
             int actualDriversCount = dailyDelivery.getActualDriversCount();
 
             for(int i = 1; i <= actualDriversCount; ++i) {
-                List<Package> packages = getPackages(user, buildRouteFilePath(user, i));
+                List<Package> packages = getPackages(buildRouteFilePath(user, i));
                 packages.sort(Comparator.comparing(Package::getOrder));
                 routes.add(new Route(packages));
             }
@@ -133,7 +131,7 @@ public class DeliveryService {
             throw new ApiException(403, "Action forbidden in this delivery state.");
         }
 
-        List<Package> packages = getPackages(user, buildPackagesFilePath(user));
+        List<Package> packages = getPackages(buildPackagesFilePath(user));
         int estimatedDriversCount = clusteringService.estimateDriversCount(packages, user.getDrivers().size());
 
         dailyDelivery.setEstimatedDriversCount(estimatedDriversCount);
@@ -157,7 +155,7 @@ public class DeliveryService {
             throw new ApiException(403, "Action forbidden in this delivery state.");
         }
 
-        List<Package> packages = getPackages(user, buildPackagesFilePath(user));
+        List<Package> packages = getPackages(buildPackagesFilePath(user));
         Map<Centroid, List<Package>> clusters =
                 clusteringService.kMeansPlusPlus(packages, Integer.min(dailyDelivery.getPackagesCount(), driversCount));
 
@@ -220,15 +218,9 @@ public class DeliveryService {
         return optionalUser.get();
     }
 
-    private List<Package> getPackages(User user, String filePath) throws IOException, ApiException {
+    private List<Package> getPackages(String filePath) throws ApiException {
         Resource gcsFile = context.getResource(storagePath + filePath);
-        byte[] content;
-        try (InputStream is = gcsFile.getInputStream()) {
-            content = is.readAllBytes();
-        }
-
-        return csvService.mapToPackageList(
-                new MockMultipartFile("file", "file", "text/plain", content));
+        return csvService.mapResourceToPackageList(gcsFile);
     }
 
     private DeliveryDTO deliveryMapper(Delivery delivery, Set<Route> routes) {

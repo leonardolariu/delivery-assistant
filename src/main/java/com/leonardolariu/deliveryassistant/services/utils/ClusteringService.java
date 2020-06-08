@@ -1,7 +1,9 @@
 package com.leonardolariu.deliveryassistant.services.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,14 +14,16 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @Service
+@EnableCaching
 public class ClusteringService {
     private final int maxIterations = 100;
 
     @Autowired
     private DistanceService distanceService;
 
-    @Cacheable
+    @Cacheable("estimations")
     public int estimateDriversCount(List<Package> packages, int maxK) {
         if (maxK == 1)
             return 1;
@@ -52,6 +56,8 @@ public class ClusteringService {
             }
 
             currScore /= packages.size();
+            log.info("k = " + k + " -> silhouetteScore = " + currScore);
+            
             if (currScore > bestScore) {
                 bestScore = currScore;
                 bestK = k;
@@ -61,7 +67,7 @@ public class ClusteringService {
         return bestK;
     }
 
-    @Cacheable
+    @Cacheable("routes")
     public Map<Centroid, List<Package>> kMeansPlusPlus(List<Package> packages, int k) {
 
         List<Centroid> centroids = smartlyDistributedCentroids(packages, k);

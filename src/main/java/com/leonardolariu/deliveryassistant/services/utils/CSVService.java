@@ -3,6 +3,7 @@ package com.leonardolariu.deliveryassistant.services.utils;
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,23 @@ public class CSVService {
             } catch (Exception ex) {
                 throw new ApiException(400, "File has invalid format.");
             }
+        }
+
+        return packages;
+    }
+
+    public List<Package> mapResourceToPackageList(Resource gcsFile) throws ApiException {
+        List<Package> packages;
+
+        try (Reader reader = new BufferedReader(new InputStreamReader(gcsFile.getInputStream()))) {
+            CsvToBean<Package> csvToBean = new CsvToBeanBuilder(reader)
+                    .withType(Package.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            packages = csvToBean.parse();
+        } catch (Exception ex) {
+            throw new ApiException(400, "File has invalid format.");
         }
 
         return packages;
