@@ -74,6 +74,7 @@ public class DeliveryService {
             userRepository.save(user);
         }
 
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
         Set<Route> routes = new HashSet<>();
         if (ROUTES_PROCESSED.equals(dailyDelivery.getStatus())) {
             int actualDriversCount = dailyDelivery.getActualDriversCount();
@@ -82,10 +83,21 @@ public class DeliveryService {
                 List<Package> packages = getPackages(buildRouteFilePath(user, i));
                 packages.sort(Comparator.comparing(Package::getOrder));
                 routes.add(new Route(packages));
+
+                for (Package aPackage : packages) {
+                    minX = Double.min(minX, aPackage.getXCoordinate());
+                    minY = Double.min(minY, aPackage.getYCoordinate());
+                    maxX = Double.max(maxX, aPackage.getXCoordinate());
+                    maxY = Double.max(maxY, aPackage.getYCoordinate());
+                }
             }
         }
 
-        return deliveryMapper(dailyDelivery, routes);
+        return deliveryMapper(
+                dailyDelivery,
+                new Centroid((minX + maxX) / 2, (minY + maxY) / 2),
+                routes
+        );
     }
 
     public void uploadCSV(UserDetails userDetails, MultipartFile file) throws ApiException, IOException {
@@ -223,7 +235,7 @@ public class DeliveryService {
         return csvService.mapResourceToPackageList(gcsFile);
     }
 
-    private DeliveryDTO deliveryMapper(Delivery delivery, Set<Route> routes) {
+    private DeliveryDTO deliveryMapper(Delivery delivery, Centroid mapCenter, Set<Route> routes) {
         return DeliveryDTO.builder()
                 .date(delivery.getDeliveryShortDateString())
                 .status(delivery.getStatus())
@@ -231,6 +243,7 @@ public class DeliveryService {
                 .actualDriversCount(delivery.getActualDriversCount())
                 .packagesCount(delivery.getPackagesCount())
                 .minimumDistanceToCover(delivery.getMinimumDistanceToCover())
+                .mapCenter(mapCenter)
                 .routes(routes)
                 .build();
     }
