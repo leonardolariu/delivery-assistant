@@ -36,7 +36,7 @@ public class DeliveryService {
 
     private ClusteringService clusteringService;
 
-    private DistanceService distanceService;
+    private TSPService tspService;
 
     private ApplicationContext context;
 
@@ -47,13 +47,13 @@ public class DeliveryService {
 
     @Autowired
     public DeliveryService(UserRepository userRepository, DeliveryRepository deliveryRepository, CSVService csvService,
-                           ClusteringService clusteringService, DistanceService distanceService,
+                           ClusteringService clusteringService, TSPService tspService,
                            ApplicationContext applicationContext) {
         this.userRepository = userRepository;
         this.deliveryRepository = deliveryRepository;
         this.csvService = csvService;
         this.clusteringService = clusteringService;
-        this.distanceService = distanceService;
+        this.tspService = tspService;
         this.context = applicationContext;
     }
 
@@ -176,16 +176,14 @@ public class DeliveryService {
         for (List<Package> clusterPackages : clusters.values()) {
             StringBuilder routeFilecontent = new StringBuilder(routeFileHeader);
 
+            clusterPackages = tspService.solve(clusterPackages);
             int clusterSize = clusterPackages.size();
             for (int i = 0; i < clusterSize; ++i) {
-                // TODO: move order setting in TSP logic
-                clusterPackages.get(i).setOrder(i);
-
                 if (i != clusterSize - 1) {
                     Package curr = clusterPackages.get(i);
                     Package next = clusterPackages.get(i+1);
 
-                    minimumDistanceToCover += distanceService.geoDistance(curr.getXCoordinate(), curr.getYCoordinate(),
+                    minimumDistanceToCover += DistanceService.geoDistance(curr.getXCoordinate(), curr.getYCoordinate(),
                             next.getXCoordinate(), next.getYCoordinate());
                 }
 

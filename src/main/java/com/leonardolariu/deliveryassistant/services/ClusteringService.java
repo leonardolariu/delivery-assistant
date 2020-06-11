@@ -1,7 +1,9 @@
-package com.leonardolariu.deliveryassistant.services.utils;
+package com.leonardolariu.deliveryassistant.services;
 
+import com.leonardolariu.deliveryassistant.services.utils.Centroid;
+import com.leonardolariu.deliveryassistant.services.utils.Package;
+import com.leonardolariu.deliveryassistant.services.utils.RandomCollection;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
@@ -17,14 +19,11 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 @Service
 @EnableCaching
-public class ClusteringService {
+class ClusteringService {
     private final int maxIterations = 100;
 
-    @Autowired
-    private DistanceService distanceService;
-
     @Cacheable("estimations")
-    public int estimateDriversCount(List<Package> packages, int maxK) {
+    int estimateDriversCount(List<Package> packages, int maxK) {
         if (maxK == 1)
             return 1;
 
@@ -68,7 +67,7 @@ public class ClusteringService {
     }
 
     @Cacheable("routes")
-    public Map<Centroid, List<Package>> kMeansPlusPlus(List<Package> packages, int k) {
+    Map<Centroid, List<Package>> kMeansPlusPlus(List<Package> packages, int k) {
 
         List<Centroid> centroids = smartlyDistributedCentroids(packages, k);
         Map<Centroid, List<Package>> clusters = new HashMap<>();
@@ -182,7 +181,7 @@ public class ClusteringService {
 
 
     private double computeDistance(Package currPackage, Centroid centroid) {
-        return distanceService.euclidianDistance(currPackage.getXCoordinate(), currPackage.getYCoordinate(),
+        return DistanceService.euclidianDistance(currPackage.getXCoordinate(), currPackage.getYCoordinate(),
                         centroid.getXCoordinate(), centroid.getYCoordinate());
     }
 
@@ -190,7 +189,7 @@ public class ClusteringService {
         if (currPackage.equals(otherPackage))
             return 0;
 
-        return distanceService.euclidianDistance(currPackage.getXCoordinate(), currPackage.getYCoordinate(),
+        return DistanceService.euclidianDistance(currPackage.getXCoordinate(), currPackage.getYCoordinate(),
                 otherPackage.getXCoordinate(), otherPackage.getYCoordinate());
     }
 }

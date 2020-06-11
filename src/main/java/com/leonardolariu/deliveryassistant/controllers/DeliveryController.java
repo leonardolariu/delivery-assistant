@@ -7,7 +7,7 @@ import com.leonardolariu.deliveryassistant.payload.responses.DeliveryDTO;
 import com.leonardolariu.deliveryassistant.payload.responses.EstimationResponse;
 import com.leonardolariu.deliveryassistant.payload.responses.MessageResponse;
 import com.leonardolariu.deliveryassistant.services.DeliveryService;
-import com.leonardolariu.deliveryassistant.services.utils.CSVService;
+import com.leonardolariu.deliveryassistant.services.CSVService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

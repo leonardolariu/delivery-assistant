@@ -1,6 +1,7 @@
-package com.leonardolariu.deliveryassistant.services.utils;
+package com.leonardolariu.deliveryassistant.services;
 
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
+import com.leonardolariu.deliveryassistant.services.utils.Package;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.core.io.Resource;
@@ -41,7 +42,7 @@ public class CSVService {
         return packages;
     }
 
-    public List<Package> mapResourceToPackageList(Resource gcsFile) throws ApiException {
+    List<Package> mapResourceToPackageList(Resource gcsFile) throws ApiException {
         List<Package> packages;
 
         try (Reader reader = new BufferedReader(new InputStreamReader(gcsFile.getInputStream()))) {
@@ -58,7 +59,7 @@ public class CSVService {
         return packages;
     }
 
-    public int getPackagesCount(MultipartFile file) throws ApiException {
+    int getPackagesCount(MultipartFile file) throws ApiException {
         // file is valid! mapToPackageList was called in DeliveryController beforehand
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {

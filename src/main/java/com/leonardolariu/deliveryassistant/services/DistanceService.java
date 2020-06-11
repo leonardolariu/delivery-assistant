@@ -1,14 +1,19 @@
-package com.leonardolariu.deliveryassistant.services.utils;
+package com.leonardolariu.deliveryassistant.services;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 
 @Service
+@EnableCaching
 public class DistanceService {
-    double euclidianDistance(double lat1, double lon1, double lat2, double lon2) {
+    @Cacheable("euclidian-distances")
+    public static double euclidianDistance(double lat1, double lon1, double lat2, double lon2) {
         return Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lon1 - lon2, 2));
     }
 
-    public double geoDistance(double lat1, double lon1, double lat2, double lon2) {
+    @Cacheable("geo-distances")
+    static double geoDistance(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371; // kilometers
         double phi1 = deg2rad(lat1);
         double phi2 = deg2rad(lat2);
@@ -30,14 +35,14 @@ public class DistanceService {
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
     /*::  This function converts decimal degrees to radians             :*/
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-    private double deg2rad(double deg) {
+    private static double deg2rad(double deg) {
         return (deg * Math.PI / 180.0);
     }
 
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
     /*::  This function converts radians to decimal degrees             :*/
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-    private double rad2deg(double rad) {
+    private static double rad2deg(double rad) {
         return (rad * 180.0 / Math.PI);
     }
 }
