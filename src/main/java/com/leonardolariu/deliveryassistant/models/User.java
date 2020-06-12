@@ -72,4 +72,13 @@ public class User {
 
         return todayString.equals(deliveryDateString);
     }
+
+    public boolean hasDriver(String email) {
+        for (Driver driver: drivers) {
+            if (driver.getEmail().equals(email))
+                return true;
+        }
+
+        return false;
+    }
 }

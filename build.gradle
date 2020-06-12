@@ -30,6 +30,7 @@ dependencies {
 	compile group: 'org.hibernate.validator', name: 'hibernate-validator-annotation-processor', version: '6.1.5.Final'
 	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 	compile 'com.opencsv:opencsv:5.2'
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.2.6.RELEASE'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'

@@ -7,7 +7,7 @@ import com.leonardolariu.deliveryassistant.payload.responses.DeliveryDTO;
 import com.leonardolariu.deliveryassistant.payload.responses.Route;
 import com.leonardolariu.deliveryassistant.repositories.DeliveryRepository;
 import com.leonardolariu.deliveryassistant.repositories.UserRepository;
-import com.leonardolariu.deliveryassistant.services.utils.*;
+import com.leonardolariu.deliveryassistant.services.utils.Centroid;
 import com.leonardolariu.deliveryassistant.services.utils.Package;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -38,6 +39,8 @@ public class DeliveryService {
 
     private TSPService tspService;
 
+    private EmailService emailService;
+
     private ApplicationContext context;
 
     @Value("${deliveryassistant.app.storagePath}")
@@ -47,13 +50,14 @@ public class DeliveryService {
 
     @Autowired
     public DeliveryService(UserRepository userRepository, DeliveryRepository deliveryRepository, CSVService csvService,
-                           ClusteringService clusteringService, TSPService tspService,
+                           ClusteringService clusteringService, TSPService tspService, EmailService emailService,
                            ApplicationContext applicationContext) {
         this.userRepository = userRepository;
         this.deliveryRepository = deliveryRepository;
         this.csvService = csvService;
         this.clusteringService = clusteringService;
         this.tspService = tspService;
+        this.emailService = emailService;
         this.context = applicationContext;
     }
 
@@ -203,12 +207,63 @@ public class DeliveryService {
         deliveryRepository.save(dailyDelivery);
     }
 
-    public void resetDailyDelivery(UserDetails userDetails) {
+    public void informDriversViaEmail(UserDetails userDetails, List<String> emails) throws ApiException, MessagingException {
+        User user = getUser(userDetails);
+
+        Delivery dailyDelivery;
+        Optional<Delivery> optionalDailyDelivery = user.getDailyDelivery();
+        if (optionalDailyDelivery.isPresent()) {
+            dailyDelivery = optionalDailyDelivery.get();
+
+            if (!ROUTES_PROCESSED.equals(dailyDelivery.getStatus())) {
+                throw new ApiException(403, "Action forbidden in this delivery state.");
+            }
+        } else {
+            throw new ApiException(403, "Action forbidden in this delivery state.");
+        }
+
+        if (emails.size() != dailyDelivery.getActualDriversCount())
+            throw new ApiException(400, "Invalid number of drivers.");
+
+        for (String email: emails) {
+            if (!user.hasDriver(email))
+                throw new ApiException(404, "Email address not found among your drivers.");
+        }
+
+        int actualDriversCount = dailyDelivery.getActualDriversCount();
+        for(int i = 1; i <= actualDriversCount; ++i) {
+            String to = emails.get(i-1);
+
+            Calendar today = new GregorianCalendar();
+            String todayString = (new SimpleDateFormat("dd MMM yyyy")).format(today.getTime());
+            String subject = "[Delivery] " + todayString;
+
+            List<Package> packages = getPackages(buildRouteFilePath(user, i));
+            packages.sort(Comparator.comparing(Package::getOrder));
+            String text = buildMessageBody(packages);
+
+            todayString = (new SimpleDateFormat("ddMMyyyy")).format(today.getTime());
+            String fileName = "route-" + todayString + ".csv";
+
+            emailService.sendMessageWithAttachment(to, subject,
+                    text, storagePath + fileName,
+                    context.getResource(storagePath + buildPackagesFilePath(user)));
+        }
+
+        dailyDelivery.setStatus(COMPLETED);
+        deliveryRepository.save(dailyDelivery);
+    }
+
+    public void resetDailyDelivery(UserDetails userDetails) throws ApiException {
         User user = getUser(userDetails);
 
         Optional<Delivery> optionalDailyDelivery = user.getDailyDelivery();
         if (optionalDailyDelivery.isPresent()) {
             Delivery dailyDelivery = optionalDailyDelivery.get();
+
+            if (COMPLETED.equals(dailyDelivery.getStatus())) {
+                throw new ApiException(403, "Action forbidden in this delivery state.");
+            }
 
             dailyDelivery.setStatus(NOT_STARTED);
             dailyDelivery.setEstimatedDriversCount(0);
@@ -260,5 +315,26 @@ public class DeliveryService {
         String todayString = (new SimpleDateFormat("ddMMyyyy")).format(today.getTime());
 
         return todayString + "_" + usernameWithoutWhitespaces + "_" + "route" + i + ".csv";
+    }
+
+    private String buildMessageBody(List<Package> packages) {
+        StringBuilder messageBody = new StringBuilder();
+        List<Package> subroute = new ArrayList<>();
+
+        int packagesCount = packages.size(), currSubroute = 0;
+        for (int i = 0; i < packagesCount; ++i) {
+            subroute.add(packages.get(i));
+
+            if (subroute.size() == 9 || (i == packagesCount - 1)) {
+                messageBody.append("subroute ").append(++currSubroute).append(" - https://www.google.com/maps/dir");
+                for (Package aPackage: subroute)
+                    messageBody.append("/").append(aPackage.getXCoordinate()).append(",").append(aPackage.getYCoordinate());
+
+                messageBody.append("\n\n");
+                subroute.clear();
+            }
+        }
+
+        return messageBody.toString();
     }
 }
