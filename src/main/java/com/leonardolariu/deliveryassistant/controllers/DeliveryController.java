@@ -3,6 +3,8 @@ package com.leonardolariu.deliveryassistant.controllers;
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
 import com.leonardolariu.deliveryassistant.payload.errors.BadRequestError;
 import com.leonardolariu.deliveryassistant.payload.errors.ForbiddenError;
+import com.leonardolariu.deliveryassistant.payload.errors.NotFoundError;
+import com.leonardolariu.deliveryassistant.payload.responses.DeliveriesData;
 import com.leonardolariu.deliveryassistant.payload.responses.DeliveryDTO;
 import com.leonardolariu.deliveryassistant.payload.responses.EstimationResponse;
 import com.leonardolariu.deliveryassistant.payload.responses.MessageResponse;
@@ -65,6 +67,16 @@ public class DeliveryController {
                     .badRequest()
                     .body(new BadRequestError("File could not be read."));
         }
+    }
+
+    @GetMapping("/last-30-days")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getDeliveryDataForLast30Days() {
+        log.info("GET request to get delivery data for last 30 days");
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        DeliveriesData deliveriesData = deliveryService.getDeliveryDataForLast30Days(userDetails);
+        return ResponseEntity.ok(deliveriesData);
     }
 
     @PostMapping("daily/upload-csv")
@@ -174,6 +186,11 @@ public class DeliveryController {
                     return ResponseEntity
                             .status(HttpStatus.FORBIDDEN)
                             .body(new ForbiddenError(e.getMessage()));
+
+                case 404:
+                    return ResponseEntity
+                            .status(HttpStatus.NOT_FOUND)
+                            .body(new NotFoundError(e.getMessage()));
 
                 default:
                     return ResponseEntity

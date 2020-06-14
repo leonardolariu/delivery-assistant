@@ -3,8 +3,7 @@ package com.leonardolariu.deliveryassistant.services;
 import com.leonardolariu.deliveryassistant.models.Delivery;
 import com.leonardolariu.deliveryassistant.models.User;
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
-import com.leonardolariu.deliveryassistant.payload.responses.DeliveryDTO;
-import com.leonardolariu.deliveryassistant.payload.responses.Route;
+import com.leonardolariu.deliveryassistant.payload.responses.*;
 import com.leonardolariu.deliveryassistant.repositories.DeliveryRepository;
 import com.leonardolariu.deliveryassistant.repositories.UserRepository;
 import com.leonardolariu.deliveryassistant.services.utils.Centroid;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.leonardolariu.deliveryassistant.models.EDeliveryStatus.*;
 
@@ -102,6 +102,24 @@ public class DeliveryService {
                 new Centroid((minX + maxX) / 2, (minY + maxY) / 2),
                 routes
         );
+    }
+
+    public DeliveriesData getDeliveryDataForLast30Days(UserDetails userDetails) {
+        User user = getUser(userDetails);
+
+        Calendar lastDate = new GregorianCalendar();
+        lastDate.add(Calendar.DATE, -29);
+
+        List<DeliveryDTO> deliveries = user.getDeliveries().stream()
+                .filter(delivery -> delivery.getDate().compareTo(lastDate) > 0)
+                .filter(delivery -> delivery.getStatus().equals(COMPLETED))
+                .map(delivery -> deliveryMapper(delivery, null, null))
+                .sorted(Comparator.comparing(DeliveryDTO::getDate))
+                .collect(Collectors.toList());
+
+        return DeliveriesData.builder()
+                .deliveries(deliveries)
+                .build();
     }
 
     public void uploadCSV(UserDetails userDetails, MultipartFile file) throws ApiException, IOException {
@@ -245,8 +263,7 @@ public class DeliveryService {
             todayString = (new SimpleDateFormat("ddMMyyyy")).format(today.getTime());
             String fileName = "route-" + todayString + ".csv";
 
-            emailService.sendMessageWithAttachment(to, subject,
-                    text, storagePath + fileName,
+            emailService.sendMessageWithAttachment(to, subject, text, fileName,
                     context.getResource(storagePath + buildPackagesFilePath(user)));
         }
 

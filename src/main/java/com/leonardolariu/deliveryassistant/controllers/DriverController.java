@@ -2,6 +2,7 @@ package com.leonardolariu.deliveryassistant.controllers;
 
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
 import com.leonardolariu.deliveryassistant.payload.errors.BadRequestError;
+import com.leonardolariu.deliveryassistant.payload.errors.ForbiddenError;
 import com.leonardolariu.deliveryassistant.payload.errors.NotFoundError;
 import com.leonardolariu.deliveryassistant.payload.requests.AddDriverRequest;
 import com.leonardolariu.deliveryassistant.payload.responses.DriverDTO;
@@ -50,6 +51,11 @@ public class DriverController {
             return ResponseEntity.ok(driverDTO);
         } catch (ApiException e) {
             switch (e.getStatus()) {
+                case 403:
+                    return ResponseEntity
+                            .status(HttpStatus.FORBIDDEN)
+                            .body(new ForbiddenError(e.getMessage()));
+
                 default:
                     return ResponseEntity
                             .badRequest()
@@ -69,6 +75,11 @@ public class DriverController {
             return ResponseEntity.ok(new MessageResponse("Removed driver."));
         } catch (ApiException e) {
             switch (e.getStatus()) {
+                case 403:
+                    return ResponseEntity
+                            .status(HttpStatus.FORBIDDEN)
+                            .body(new ForbiddenError(e.getMessage()));
+
                 case 404:
                     return ResponseEntity
                             .status(HttpStatus.NOT_FOUND)

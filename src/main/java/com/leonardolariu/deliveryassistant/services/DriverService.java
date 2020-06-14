@@ -1,5 +1,6 @@
 package com.leonardolariu.deliveryassistant.services;
 
+import com.leonardolariu.deliveryassistant.models.Delivery;
 import com.leonardolariu.deliveryassistant.models.Driver;
 import com.leonardolariu.deliveryassistant.models.User;
 import com.leonardolariu.deliveryassistant.payload.errors.ApiException;
@@ -14,9 +15,13 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.leonardolariu.deliveryassistant.models.EDeliveryStatus.NOT_STARTED;
+import static com.leonardolariu.deliveryassistant.models.EDeliveryStatus.COMPLETED;
 
 @Service
 public class DriverService {
@@ -33,11 +38,19 @@ public class DriverService {
 
 
     public DriverDTO addDriver(UserDetails userDetails, AddDriverRequest addDriverRequest) throws ApiException {
-        // TODO: check daily delivery status to be NOT_STARTED or COMPLETED
-
         User user = getUser(userDetails);
-        Driver driver = new Driver(addDriverRequest.getName(), addDriverRequest.getEmail(), user);
 
+        Delivery dailyDelivery;
+        Optional<Delivery> optionalDailyDelivery = user.getDailyDelivery();
+        if (optionalDailyDelivery.isPresent()) {
+            dailyDelivery = optionalDailyDelivery.get();
+
+            if (!NOT_STARTED.equals(dailyDelivery.getStatus()) && !COMPLETED.equals(dailyDelivery.getStatus())) {
+                throw new ApiException(403, "Action forbidden in this delivery state.");
+            }
+        }
+
+        Driver driver = new Driver(addDriverRequest.getName(), addDriverRequest.getEmail(), user);
         try {
             driverRepository.save(driver);
         } catch (Exception e) {
@@ -51,7 +64,17 @@ public class DriverService {
     }
 
     public void removeDriver(UserDetails userDetails, Long driverId) throws ApiException {
-        // TODO: check daily delivery status to be NOT_STARTED or COMPLETED
+        User user = getUser(userDetails);
+
+        Delivery dailyDelivery;
+        Optional<Delivery> optionalDailyDelivery = user.getDailyDelivery();
+        if (optionalDailyDelivery.isPresent()) {
+            dailyDelivery = optionalDailyDelivery.get();
+
+            if (!NOT_STARTED.equals(dailyDelivery.getStatus()) && !COMPLETED.equals(dailyDelivery.getStatus())) {
+                throw new ApiException(403, "Action forbidden in this delivery state.");
+            }
+        }
 
         Optional<Driver> optionalDriver = driverRepository.findById(driverId);
         optionalDriver.ifPresent(driver -> removeDriverFromDB(getUser(userDetails), driver));
@@ -61,9 +84,10 @@ public class DriverService {
     public DriversData getDriversData(UserDetails userDetails) {
         User user = getUser(userDetails);
 
-        Set<DriverDTO> drivers = user.getDrivers().stream()
+        List<DriverDTO> drivers = user.getDrivers().stream()
                 .map(this::driverMapper)
-                .collect(Collectors.toSet());
+                .sorted(Comparator.comparing(DriverDTO::getId))
+                .collect(Collectors.toList());
 
         return DriversData.builder()
                 .driversCount(drivers.size())

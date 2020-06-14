@@ -20,6 +20,11 @@ public class Candidate {
         Collections.shuffle(indexes);
     }
 
+    public Candidate(List<Integer> indexes, Double fitness) {
+        this.indexes = indexes;
+        this.fitness = fitness;
+    }
+
     Candidate(Candidate candidate) {
         indexes = candidate.getIndexes();
         fitness = candidate.getFitness();

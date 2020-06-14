@@ -3,15 +3,13 @@ package com.leonardolariu.deliveryassistant.services;
 import com.leonardolariu.deliveryassistant.services.utils.Candidate;
 import com.leonardolariu.deliveryassistant.services.utils.Package;
 import com.leonardolariu.deliveryassistant.services.utils.Population;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-
-@Slf4j
 @Service
 class TSPService {
     private final int RUNS = 30;
@@ -30,6 +28,7 @@ class TSPService {
             if (runBestCandidate.getFitness() > globalBestCandidate.getFitness())
                 globalBestCandidate = runBestCandidate;
         }
+        globalBestCandidate = hillClimbBestImprovement(globalBestCandidate);
 
         List<Package> orderedPackages = new ArrayList<>();
         globalBestCandidate.getIndexes().forEach(i-> orderedPackages.add(unorderedPackages.get(i)));
@@ -63,5 +62,52 @@ class TSPService {
         }
 
         return runBestCandidate;
+    }
+
+    private Candidate hillClimbBestImprovement(Candidate candidate) {
+        List<Integer> indexes = candidate.getIndexes();
+        int indexesSize = indexes.size();
+
+        double bestFitness = candidate.getFitness(), currFitness;
+        int bestI = -1, bestJ = -1;
+        boolean foundImprovement = false;
+        for (int i = 0; i < indexesSize - 1; ++i) {
+            for (int j = i+1; j <indexesSize; ++j) {
+                Collections.swap(indexes, i, j);
+                currFitness = computeCandidateFitness(indexes, indexesSize);
+
+                if (currFitness > bestFitness) {
+                    bestFitness = currFitness;
+                    bestI = i;
+                    bestJ = j;
+                    foundImprovement = true;
+                }
+
+                Collections.swap(indexes, i, j);
+            }
+        }
+
+        if (!foundImprovement)
+            return candidate;
+
+        Collections.swap(indexes, bestI, bestJ);
+        Candidate bestCandidate = new Candidate(indexes, bestFitness);
+        return hillClimbBestImprovement(bestCandidate);
+    }
+
+    private double computeCandidateFitness(List<Integer> indexes, int indexesSize) {
+        double routeDistance = 0;
+        for (int i = 0; i < indexesSize - 1; ++i) {
+            Package pack1 = unorderedPackages.get(indexes.get(i));
+            Package pack2 = unorderedPackages.get(indexes.get(i+1));
+
+            routeDistance += DistanceService.euclidianDistance(
+                    pack1.getXCoordinate(), pack1.getYCoordinate(),
+                    pack2.getXCoordinate(), pack2.getYCoordinate()
+            );
+        }
+
+        // assure that shorter length determines greater fitness
+        return 1D / routeDistance;
     }
 }

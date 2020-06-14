@@ -7,7 +7,6 @@ import java.util.List;
 
 @Builder
 @Getter
-public class DriversData {
-    private int driversCount;
-    private List<DriverDTO> drivers;
+public class DeliveriesData {
+    private List<DeliveryDTO> deliveries;
 }
