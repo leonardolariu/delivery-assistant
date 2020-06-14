@@ -1,0 +1,172 @@
+body {
+  margin: 20px 20px 0 20px !important;
+}
+
+.login-card {
+  margin-top: 25vh !important;
+  padding: 5px;
+
+  .card-header {
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .form-buttons-center {
+    text-align: center;
+    margin-top: 40px;
+
+    .btn {
+      width: 50%;
+    }
+
+    .btn:first-of-type {
+      margin-bottom: 20px !important;
+    }
+  }
+}
+
+.highlighted-text-primary {
+  color: #5e72e4;
+}
+
+.highlighted-text-default {
+  color: #344675;
+}
+
+.navbar {
+  border-radius: 0.4285rem;
+  margin-bottom: 20px;
+}
+
+.nav-link {
+  font-weight: 700;
+  position: relative;
+  top: 0;
+  transition: top ease 0.2s;
+  color: white !important;
+
+  &:hover {
+    top: -2px;
+  }
+}
+
+.modal-open {
+  padding-right: 0 !important;
+}
+
+.card-body {
+  padding: 15px !important;
+}
+
+.react-notification-alert-container {
+  div {
+    div {
+      padding-right: 0 !important;
+      margin-bottom: 20px !important;
+    }
+
+    div:last-of-type {
+      margin-bottom: 0 !important;
+    }
+  }
+}
+
+.sticky-card-holder {
+  position: sticky !important;
+  top: 20px !important;
+}
+
+.status-inactive {
+  color: #525f7f;
+  padding-left: 25px;
+}
+
+.custom-td {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  padding: 12px 7px !important;
+  vertical-align: middle !important;
+}
+
+.add-driver-card {
+  padding: 5px;
+}
+
+.file-upload-holder {
+  display: flex;
+  flex-direction: row;
+
+  .form-control-file {
+    margin-top: 10px !important;
+    cursor: pointer;
+  }
+
+  .form-control {
+    cursor: pointer;
+  }
+
+  .file-upload-div {
+    flex: 1;
+
+    .btn {
+      float: right;
+      margin-top: 18px !important;
+      margin-bottom: 0px !important;
+    }
+  }
+
+  .custom-div:first-of-type {
+    flex: 1;
+
+    .custom-div-text {
+      margin-top: 25px !important;
+    }
+  }
+
+  .custom-div:last-of-type {
+    flex: 1;
+
+    .btn {
+      float: right;
+      margin-top: 15px !important;
+      margin-bottom: 0px !important;
+    }
+  }
+}
+
+.loading-modal {
+  margin: 0 !important;
+
+  .modal-content {
+    position: absolute;
+    overflow-y: hidden;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1e1e2f;
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+.inform-drivers-holder {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .form-check {
+    flex: 1 0 50% !important;
+  }
+}
+
+.inform-button-holder {
+  .btn {
+    float: right;
+    margin-top: 15px !important;
+    margin-bottom: 0px !important;
+  }
+}
