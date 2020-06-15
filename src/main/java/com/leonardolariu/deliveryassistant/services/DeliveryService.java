@@ -264,7 +264,7 @@ public class DeliveryService {
             String fileName = "route-" + todayString + ".csv";
 
             emailService.sendMessageWithAttachment(to, subject, text, fileName,
-                    context.getResource(storagePath + buildPackagesFilePath(user)));
+                    context.getResource(storagePath + buildRouteFilePath(user, i)));
         }
 
         dailyDelivery.setStatus(COMPLETED);
